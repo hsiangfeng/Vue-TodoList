@@ -17,7 +17,6 @@ const filterData = computed(() => {
     if (state.value === 'Completed') {
       return data.value.filter((item) => item.isCompleted);
     }
-
     return data.value;
 });
 
