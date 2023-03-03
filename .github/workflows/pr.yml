@@ -1,0 +1,58 @@
+name: Develop PR Check
+on:
+  pull_request:
+    branches:
+      - develop
+
+jobs:
+  build :
+    name: build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout to Repo Directory
+      uses: actions/checkout@v2
+    - name: Use Node.js 16.15.0
+      uses: actions/setup-node@v2
+      with:
+        node-version: '16.15.0'
+    - name: NPM ci and cacheing
+      uses: bahmutov/npm-install@v1
+      with:
+        useRollingCache: true
+  unittest :
+    name: Run UnitTest
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout to Repo Directory
+      uses: actions/checkout@v2
+    - name: Use Node.js 16.15.0
+      uses: actions/setup-node@v2
+      with:
+        node-version: '16.15.0'
+    - name: Get Cache Node Module
+      uses: bahmutov/npm-install@v1
+      with:
+        useRollingCache: true
+    - name: run unit coverage
+      run: npm run coverage
+    - name: upload Unit Test report
+      uses: actions/upload-artifact@v2
+      with:
+        name: Unit Test report
+        path: ${{ github.workspace }}/mochawesome-report
+        retention-days: 1
+    - name: Coverage monitor
+      uses: slavcodev/coverage-monitor-action@v1
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        coverage_path: "coverage/clover.xml"
+        threshold_alert: 10
+        threshold_warning: 50
+        comment_context: 'Unit Test Report'
+    - name: upload coverage report
+      uses: actions/upload-artifact@v2
+      with:
+        name: coverage report
+        path: ${{ github.workspace }}/coverage
+        retention-days: 1
